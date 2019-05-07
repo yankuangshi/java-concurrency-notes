@@ -176,7 +176,7 @@ Runnable和Thread的选择
 
 2. 如果类只需要可执行就可以，继承整个Thread类开销太大
 
-[示例代码](../../java/org/concurrency/thread/ThreadImpl.java)
+👉 [示例代码](../../java/org/concurrency/thread/ThreadImpl.java)
 
 
 ### 线程的中断和终止
@@ -184,14 +184,14 @@ Runnable和Thread的选择
 通过调用线程的`interrupt()`中断线程，如果该线程处于 WAITING 或 TIMED_WAITING 状态时（如调用了`Object.wait()`、`Object.wait(long)`、
 `Object.join()`、`Object.join(long)`、`sleep(long)`等），那么会抛出`InterruptedException`，并且*中断状态会被清除*
 
-→ [参看interrupt()文档][6]
+👉 [参看interrupt()文档][6]
 
 如果一个线程的`run()`方法执行一个无限循环，并且没有执行会抛出`InterruptedException`的操作，那么调用该线程的`interrupt()`方法就无法使线程提前结束。
 但是`interrupt()`方法会设置一个中断状态，此时线程可以通过`isInterrupted()`或者调用静态方法`Thread.interrupted()`来检查线程是否被中断。
 
 *其中`Thread.interrupted()`方法会清除当前线程的中断状态。*
 
-[示例代码](../../java/org/concurrency/thread/InterruptedStatus.java)
+👉 [示例代码](../../java/org/concurrency/thread/InterruptedStatus.java)
 
 ### 线程间的协作
 
