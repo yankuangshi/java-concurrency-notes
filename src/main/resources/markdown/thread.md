@@ -1,4 +1,6 @@
-## Java线程的生命周期
+# Java线程基础
+
+## 线程的生命周期
 
 ### [线程的状态][1]
 
@@ -142,11 +144,11 @@ public class Thread {
 
 1. 实现 Runnable 接口
     
-    需要实现`run()`方法，并通过 Thread 调用`start()`方法来运行`run()`方法
+需要实现`run()`方法，并通过 Thread 调用`start()`方法来运行`run()`方法
 
 2. 继承Thread类
     
-    同样也需要重写`run()`方法，因为 Thread 实际是实现了 Runnable 接口
+同样也需要重写`run()`方法，因为 Thread 实际是实现了 Runnable 接口
     
 ```java
 public class Thread {
@@ -162,7 +164,7 @@ public class Thread {
 
 3. 实现 Callable 接口
 
-    需要实现`call()`方法，与 Runnable 相比，Callable可以有返回值，返回值通过 FutureTask 进行封装
+需要实现`call()`方法，与 Runnable 相比，Callable可以有返回值，返回值通过 FutureTask 进行封装
     
 ```java
 public interface Callable<V> {
@@ -195,6 +197,11 @@ Runnable和Thread的选择
 
 ### 线程间的协作
 
+### 参考
+
+* 《Java并发编程的艺术》
+* Java并发编程实战 by 极客时间
+
 
 
 [1]: https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.State.html
@@ -203,3 +210,4 @@ Runnable和Thread的选择
 [4]: https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.State.html#WAITING
 [5]: https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.State.html#TIMED_WAITING
 [6]: https://docs.oracle.com/javase/8/docs/api/java/lang/Thread.html#interrupt--
+

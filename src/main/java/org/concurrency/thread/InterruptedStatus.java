@@ -16,6 +16,11 @@ public class InterruptedStatus {
 //        testInterruptedStatusWithoutCleared();
     }
 
+    /**
+     * 抛出InterruptedException，Java虚拟机会先将该线程的中断标识清除
+     *
+     * @throws InterruptedException
+     */
     public static void testInterruptedStatusCleared() throws InterruptedException {
         Thread sleepThread = new Thread(new SleepRunnable(), "SleepThread");
         sleepThread.start();
@@ -28,6 +33,11 @@ public class InterruptedStatus {
         //Thread: SleepThread interrupted status: false
     }
 
+    /**
+     * 调用静态方法Thread.interrupted()会清除当前线程的中断标识
+     *
+     * @throws InterruptedException
+     */
     public static void testInterruptedStatusCleared2() throws InterruptedException {
         Thread busyThread = new Thread(new BusyRunnable(),"BusyThread");
         busyThread.start();
@@ -38,6 +48,10 @@ public class InterruptedStatus {
         //Thread: BusyThread interrupted status: false
     }
 
+    /**
+     * 中断标识不会被清除
+     * @throws InterruptedException
+     */
     public static void testInterruptedStatusWithoutCleared() throws InterruptedException {
         Thread busyThread = new Thread(new BusyRunnable2(), "BusyThread2");
         busyThread.start();
