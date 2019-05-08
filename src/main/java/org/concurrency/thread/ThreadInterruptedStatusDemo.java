@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
  * @author kyan
  * @date 2019/05/07
  */
-public class InterruptedStatus {
+public class ThreadInterruptedStatusDemo {
 
     public static void main(String[] args) throws InterruptedException {
         testInterruptedStatusCleared();

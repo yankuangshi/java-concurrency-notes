@@ -86,7 +86,9 @@ public class Thread implements Runnable {
 
 *注意：如果我们想人为终止线程，Thread类里面提供了一个`stop()`方法，但是已被标注为`@Deprecated`，正确的方法应该是调用`interrupt()`方法*
 
-[示例代码](../../java/org/concurrency/thread/ThreadState.java)
+![Java线程状态变迁图](../img/Java线程状态变迁图.jpg)
+
+👉 [TreadStateDemo 示例代码](../../java/org/concurrency/thread/ThreadStateDemo.java)
 
 ## 线程的使用
 
@@ -178,7 +180,7 @@ Runnable和Thread的选择
 
 2. 如果类只需要可执行就可以，继承整个Thread类开销太大
 
-👉 [示例代码](../../java/org/concurrency/thread/ThreadImpl.java)
+👉 [ThreadImplDemo 示例代码](../../java/org/concurrency/thread/ThreadImplDemo.java)
 
 
 ### 线程的中断和终止
@@ -193,7 +195,11 @@ Runnable和Thread的选择
 
 *其中`Thread.interrupted()`方法会清除当前线程的中断状态。*
 
-👉 [示例代码](../../java/org/concurrency/thread/InterruptedStatus.java)
+👉 [ThreadInterruptedStatusDemo 示例代码](../../java/org/concurrency/thread/ThreadInterruptedStatusDemo.java)
+
+由于`stop()`方法被标注为了`@Deprecated`，所以除了中断以外，还可以利用一个`volatile`类型的`boolean`变量来控制是否需要停止任务并终止该线程。
+
+👉 [ThreadShutdownDemo 示例代码](../../java/org/concurrency/thread/ThreadShutdownDemo.java)
 
 ### 线程间的协作
 

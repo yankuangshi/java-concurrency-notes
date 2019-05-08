@@ -10,7 +10,7 @@ import java.util.concurrent.FutureTask;
  * @author kyan
  * @date 2019/05/07
  */
-public class ThreadImpl {
+public class ThreadImplDemo {
 
     /**
      * 方法1： 实现 Runnable 接口

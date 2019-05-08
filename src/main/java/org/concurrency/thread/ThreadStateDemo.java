@@ -8,7 +8,7 @@ import java.util.concurrent.TimeUnit;
  * @author kyan
  * @date 2019/05/07
  */
-public class ThreadState {
+public class ThreadStateDemo {
 
     public static void main(String[] args) {
         //初始化两个BlockThread线程，其中一个获得锁，另一个处于BLOCKED阻塞状态
