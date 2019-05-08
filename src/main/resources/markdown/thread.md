@@ -293,7 +293,11 @@ wait()/notify()/notifyAll()方法的说明
 
 ![等待-通知图解](../img/wait-notify.png)
 
-调用wait()/notify()/notifyAll()时需要注意的细节：
+流程描述：wait-thread首先获得了对象的锁，然后调用对象的wait()方法，从而放弃了锁并进入了对象的等待队列（线程状态由RUNNING变为WAITING），进入等待状态。
+由于wait-thread释放了锁，notify-thread随后获取到了对象的锁，并调用对象的notifyAll()方法，将wait-thread从等待队列迁移至同步队列（线程状态由WAITING变为BLOCKED），
+等notify-thread释放锁后，wait-thread再次获取到锁并从wait()方法返回。
+
+⚠️ 调用wait()/notify()/notifyAll()时需要注意的细节：
 
 1. 调用wait()/notify()/notifyAll()时需要先对调用对象加锁（也就是说只能在同步方法或同步块中使用，否则会抛出`IllegalMonitorStateException`异常）
 
