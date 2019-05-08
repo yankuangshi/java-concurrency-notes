@@ -263,22 +263,7 @@ public class org.concurrency.thread.SynchronizedDemo
 
 具体流程见下图：
 
-```sh
-            尝试获取监视器        监视器        获取监视器成功            对象        释放锁
-            Monitor.Enter   +-----------+  Monitor.Enter Success   +--------+  Monitor.Exit
-         -----------------> |           | -----------------------> |        | ------------->
-                            |  Monitor  |                          | Object |
-                     -----> |           | ------->                 |        |
-                    |       +-----------+         |                +--------+
- Monitor.Exit       |                             |   获取监视器失败
- notify and dequeue |                             | Monitor.Enter fail
-                    |    +-------------------+    | 
-                    |    |                   |    |
-                     <-- | SynchronizedQueue | <--
-                         |                   |
-                         +-------------------+
-                                同步队列
-```
+![synchronized底层实现原理](../img/synchronized.png)
 
 ### wait()、notify() 和 notifyAll()
 
