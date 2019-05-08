@@ -203,6 +203,84 @@ Runnable和Thread的选择
 
 ### 线程间的协作
 
+#### volatile 和 synchronized
+
+* volatile关键字可以用来修饰字段（成员变量），就是告知程序任何对该变量的访问均需从共享内存中获取，而对它的改变也必须同步刷新回共享内存，它能保证所有线程对变量访问的**可见性**。
+
+* synchronized关键字可以修饰方法或者以代码同步块的形式来进行使用，主要确保多个线程在同一时刻，只能有一个线程处于方法或者代码同步块中，它保证了线程对变量访问的**可见性**和**排他性**。
+
+以下对👉 [SynchronizedDemo 示例代码](../../java/org/concurrency/thread/SynchronizedDemo.java)使用javap工具查看生成的class文件来分析synchronized关键字的实现细节：
+
+```sh
+
+➜ javap -v SynchronizedDemo.class
+Classfile /Users/kyan/Workspace/myworkspace/java-concurrency-notes/target/classes/org/concurrency/thread/SynchronizedDemo.class
+  Last modified May 8, 2019; size 606 bytes
+  MD5 checksum 2596f216b9e4121827bb5f26aa02f945
+  Compiled from "SynchronizedDemo.java"
+public class org.concurrency.thread.SynchronizedDemo
+  省略...
+
+  public static void main(java.lang.String[]);
+    descriptor: ([Ljava/lang/String;)V
+    flags: ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=2, locals=3, args_size=1
+         0: ldc           #2                  // class org/concurrency/thread/SynchronizedDemo
+         2: dup
+         3: astore_1
+         4: monitorenter                        //注：获取锁
+         5: aload_1
+         6: monitorexit                         //注：释放锁
+         7: goto          15
+        10: astore_2
+        11: aload_1
+        12: monitorexit
+        13: aload_2
+        14: athrow
+        15: invokestatic  #3                  // Method m:()V
+        18: return
+  
+  省略... 
+     
+  public static synchronized void m();
+    descriptor: ()V
+    flags: ACC_PUBLIC, ACC_STATIC, ACC_SYNCHRONIZED
+    Code:
+      stack=0, locals=0, args_size=0
+         0: return
+      LineNumberTable:
+        line 18: 0
+}
+
+```
+
+可以发现代码同步块的实现是通过`monitorenter`和`monitorexit`指令，而同步方法则是依靠方法修饰符上的`ACC_SYNCHRONIZED`来实现。
+无论采用哪种方式，其本质都是对一个对象（Object）的监视器（Monitor）进行获取，而这个获取过程是排他的。
+
+> 任意线程对由synchronized保护的Object的访问，首先要获得Object的监视器。如果获取失败，线程进入同步队列（SynchronizedQueue），线程状态变为BLOCKED。
+当访问Object的前驱（获得了锁的线程）释放了锁，则该释放操作唤醒阻塞在同步队列中的线程，使其重新尝试对监视器的获取。
+
+具体流程见下图：
+
+```sh
+            尝试获取监视器        监视器        获取监视器成功            对象        释放锁
+            Monitor.Enter   +-----------+  Monitor.Enter Success   +--------+  Monitor.Exit
+         -----------------> |           | -----------------------> |        | ------------->
+                            |  Monitor  |                          | Object |
+                     -----> |           | ------->                 |        |
+                    |       +-----------+         |                +--------+
+ Monitor.Exit       |                             |   获取监视器失败
+ notify and dequeue |                             | Monitor.Enter fail
+                    |    +-------------------+    | 
+                    |    |                   |    |
+                     <-- | SynchronizedQueue | <--
+                         |                   |
+                         +-------------------+
+                                同步队列
+```
+
+
 ### 参考
 
 * 《Java并发编程的艺术》
