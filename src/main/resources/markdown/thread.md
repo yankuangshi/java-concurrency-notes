@@ -88,7 +88,7 @@ public class Thread implements Runnable {
 
 ![Java线程状态变迁图](../img/thread-state.png)
 
-👉 [TreadStateDemo 示例代码](../../java/org/concurrency/thread/ThreadStateDemo.java)
+👉 [点击查看 TreadStateDemo 示例代码](../../java/org/concurrency/thread/ThreadStateDemo.java)
 
 ## 线程的使用
 
@@ -180,7 +180,7 @@ Runnable和Thread的选择
 
 2. 如果类只需要可执行就可以，继承整个Thread类开销太大
 
-👉 [ThreadImplDemo 示例代码](../../java/org/concurrency/thread/ThreadImplDemo.java)
+👉 [点击查看 ThreadImplDemo 示例代码](../../java/org/concurrency/thread/ThreadImplDemo.java)
 
 
 ### 线程的中断和终止
@@ -188,18 +188,18 @@ Runnable和Thread的选择
 通过调用线程的`interrupt()`中断线程，如果该线程处于 WAITING 或 TIMED_WAITING 状态时（如调用了`Object.wait()`、`Object.wait(long)`、
 `Object.join()`、`Object.join(long)`、`sleep(long)`等），那么会抛出`InterruptedException`，并且*中断状态会被清除*
 
-👉 [参看interrupt()文档][6]
+👉 [点击查看interrupt()方法文档][6]
 
 如果一个线程的`run()`方法执行一个无限循环，并且没有执行会抛出`InterruptedException`的操作，那么调用该线程的`interrupt()`方法就无法使线程提前结束。
 但是`interrupt()`方法会设置一个中断状态，此时线程可以通过`isInterrupted()`或者调用静态方法`Thread.interrupted()`来检查线程是否被中断。
 
 *其中`Thread.interrupted()`方法会清除当前线程的中断状态。*
 
-👉 [ThreadInterruptedStatusDemo 示例代码](../../java/org/concurrency/thread/ThreadInterruptedStatusDemo.java)
+👉 [点击查看 ThreadInterruptedStatusDemo 示例代码](../../java/org/concurrency/thread/ThreadInterruptedStatusDemo.java)
 
 由于`stop()`方法被标注为了`@Deprecated`，所以除了中断以外，还可以利用一个`volatile`类型的`boolean`变量来控制是否需要停止任务并终止该线程。
 
-👉 [ThreadShutdownDemo 示例代码](../../java/org/concurrency/thread/ThreadShutdownDemo.java)
+👉 [点击查看 ThreadShutdownDemo 示例代码](../../java/org/concurrency/thread/ThreadShutdownDemo.java)
 
 ### 线程间的协作
 
@@ -209,7 +209,7 @@ Runnable和Thread的选择
 
 * synchronized关键字可以修饰方法或者以代码同步块的形式来进行使用，主要确保多个线程在同一时刻，只能有一个线程处于方法或者代码同步块中，它保证了线程对变量访问的**可见性**和**排他性**。
 
-以下对👉 [SynchronizedDemo 示例代码](../../java/org/concurrency/thread/SynchronizedDemo.java)使用javap工具查看生成的class文件来分析synchronized关键字的实现细节：
+以下对👉 [点击查看 SynchronizedDemo 示例代码](../../java/org/concurrency/thread/SynchronizedDemo.java)使用javap工具查看生成的class文件来分析synchronized关键字的实现细节：
 
 ```sh
 
@@ -287,8 +287,8 @@ public class org.concurrency.thread.SynchronizedDemo
 > 一个线程调用了对象O的wait()方法进入等待状态（该线程被挂起）；而另一个线程调用了对象O的notify()或者notifyAll()方法来唤醒挂起的线程，
 挂起的线程收到通知后从对象O的wait()方法返回，进而执行后续操作。
 
-*线程使用wait()方法进入等待状态后，线程会释放锁，这是因为如果不释放锁，其他线程就无法进入对象的同步方法或同步块中，
-那么就无法执行notify()或notifyAll()来唤醒等待状态中的线程，造成死锁。*
+⚠️ 线程使用wait()方法进入等待状态后，线程会释放锁，这是因为如果不释放锁，其他线程就无法进入对象的同步方法或同步块中，
+那么就无法执行notify()或notifyAll()来唤醒等待状态中的线程，造成死锁。
 
 wait()/notify()/notifyAll()方法的说明
 
@@ -300,11 +300,13 @@ wait()/notify()/notifyAll()方法的说明
 |notify()|通知一个在对象上等待的线程，使其从wait()方法返回，而返回的前提是线程获取到对象的锁；|
 |notifyAll()|通知所有等待在该对象上的线程；|
 
-*以上方法是任意Java对象都具备的，因为这些方法被定义在所有对象的超类 java.lang.Object上* 
+⚠️ 以上方法是任意Java对象都具备的，因为这些方法被定义在所有对象的超类 java.lang.Object上
 
-*wait()和sleep()的区别：wait()是Object的方法，而sleep()是Thread的静态方法；wait()会释放锁，而sleep()不会释放锁。*
+⚠️ wait()和sleep()的区别：wait()是Object的方法，而sleep()是Thread的静态方法；wait()会释放锁，而sleep()不会释放锁
 
-👉 [WaitNotifyDemo 示例代码](../../java/org/concurrency/thread/WaitNotifyDemo.java)
+👉 [点击查看 WaitNotifyDemo 示例代码](../../java/org/concurrency/thread/WaitNotifyDemo.java)
+
+![等待-通知图解](../img/wait-notify.png)
 
 调用wait()/notify()/notifyAll()时需要注意的细节：
 
@@ -317,8 +319,6 @@ wait()/notify()/notifyAll()方法的说明
 4. notify()将等待队列中的一个等待线程从*等待队列*中移到*同步队列*中，而notifyAll()则是将等待队列中所有线程全部移到同步队列
 
 5. 线程从wait()方法返回的前提是该线程获得了锁
-
-![等待-通知图解](../img/wait-notify.png)
 
 
 ### 参考
