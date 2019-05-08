@@ -86,7 +86,7 @@ public class Thread implements Runnable {
 
 *注意：如果我们想人为终止线程，Thread类里面提供了一个`stop()`方法，但是已被标注为`@Deprecated`，正确的方法应该是调用`interrupt()`方法*
 
-![Java线程状态变迁图](../img/Java线程状态变迁图.jpg)
+![Java线程状态变迁图](../img/thread-state.png)
 
 👉 [TreadStateDemo 示例代码](../../java/org/concurrency/thread/ThreadStateDemo.java)
 
@@ -279,6 +279,46 @@ public class org.concurrency.thread.SynchronizedDemo
                          +-------------------+
                                 同步队列
 ```
+
+### wait()、notify() 和 notifyAll()
+
+等待通知机制：
+
+> 一个线程调用了对象O的wait()方法进入等待状态（该线程被挂起）；而另一个线程调用了对象O的notify()或者notifyAll()方法来唤醒挂起的线程，
+挂起的线程收到通知后从对象O的wait()方法返回，进而执行后续操作。
+
+*线程使用wait()方法进入等待状态后，线程会释放锁，这是因为如果不释放锁，其他线程就无法进入对象的同步方法或同步块中，
+那么就无法执行notify()或notifyAll()来唤醒等待状态中的线程，造成死锁。*
+
+wait()/notify()/notifyAll()方法的说明
+
+|方法名称|说明|
+|----|----|
+|wait()|通过调用对象的wait()方法，线程进入WAITING状态，只有等待其他线程的通知或被中断才会返回；调用wait()方法后，该线程会释放对象的锁；|
+|wait(long)|超时等待，时间参数是毫秒，也就是等待长达n毫秒，如果没有通知就超时返回；|
+|wait(long,unit)|对于超时时间更加细粒度的控制，可以达到纳秒；|
+|notify()|通知一个在对象上等待的线程，使其从wait()方法返回，而返回的前提是线程获取到对象的锁；|
+|notifyAll()|通知所有等待在该对象上的线程；|
+
+*以上方法是任意Java对象都具备的，因为这些方法被定义在所有对象的超类 java.lang.Object上* 
+
+*wait()和sleep()的区别：wait()是Object的方法，而sleep()是Thread的静态方法；wait()会释放锁，而sleep()不会释放锁。*
+
+👉 [WaitNotifyDemo 示例代码](../../java/org/concurrency/thread/WaitNotifyDemo.java)
+
+调用wait()/notify()/notifyAll()时需要注意的细节：
+
+1. 调用wait()/notify()/notifyAll()时需要先对调用对象加锁（也就是说只能在同步方法或同步块中使用，否则会抛出`IllegalMonitorStateException`异常）
+
+2. 调用wait()方法后，线程状态由RUNNING进入WAITING（线程挂起），并将当前线程放置到对象的*等待队列*
+
+3. 调用notify()/notifyAll()方法后，等待线程依旧不会从wait()返回，需要等到调用notify()/notifyAll()的线程释放锁之后，等待的线程才有机会从wait()返回
+
+4. notify()将等待队列中的一个等待线程从*等待队列*中移到*同步队列*中，而notifyAll()则是将等待队列中所有线程全部移到同步队列
+
+5. 线程从wait()方法返回的前提是该线程获得了锁
+
+![等待-通知图解](../img/wait-notify.png)
 
 
 ### 参考
