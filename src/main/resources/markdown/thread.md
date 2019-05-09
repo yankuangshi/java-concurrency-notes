@@ -27,7 +27,7 @@ public class Thread implements Runnable {
 | TIMED_WAITING | 有限期等待状态，无需等待其他线程做出特定动作，在一定时间期限后会被系统自动唤醒 |
 | TERMINATED | 终止状态，表示当前线程执行完毕，可能是任务完成之后自己结束，也可能是产生异常而结束 |
 
-*只要 Java 线程处于 BLOCKED、WAITING、TIMED_WAITING 这三种状态之一，那么这个线程就永远没有CPU的使用权*
+**只要 Java 线程处于 BLOCKED、WAITING、TIMED_WAITING 这三种状态之一，那么这个线程就永远没有CPU的使用权**
 
 ### 线程状态的变迁
 
@@ -84,7 +84,7 @@ public class Thread implements Runnable {
 
 线程执行完 `run()` 方法后，会自动转换成 TERMINATED 状态；如果执行 `run()` 的时候抛出异常，也会导致线程终止。
 
-*注意：如果我们想人为终止线程，Thread类里面提供了一个`stop()`方法，但是已被标注为`@Deprecated`，正确的方法应该是调用`interrupt()`方法*
+**注意：如果我们想人为终止线程，Thread类里面提供了一个`stop()`方法，但是已被标注为`@Deprecated`，正确的方法应该是调用`interrupt()`方法**
 
 ![Java线程状态变迁图](../img/thread-state.png)
 
@@ -186,14 +186,14 @@ Runnable和Thread的选择
 ### 线程的中断和终止
 
 通过调用线程的`interrupt()`中断线程，如果该线程处于 WAITING 或 TIMED_WAITING 状态时（如调用了`Object.wait()`、`Object.wait(long)`、
-`Object.join()`、`Object.join(long)`、`sleep(long)`等），那么会抛出`InterruptedException`，并且*中断状态会被清除*
+`Object.join()`、`Object.join(long)`、`sleep(long)`等），那么会抛出`InterruptedException`，并且**中断状态会被清除**
 
 👉 [点击查看interrupt()方法文档][6]
 
 如果一个线程的`run()`方法执行一个无限循环，并且没有执行会抛出`InterruptedException`的操作，那么调用该线程的`interrupt()`方法就无法使线程提前结束。
 但是`interrupt()`方法会设置一个中断状态，此时线程可以通过`isInterrupted()`或者调用静态方法`Thread.interrupted()`来检查线程是否被中断。
 
-*其中`Thread.interrupted()`方法会清除当前线程的中断状态。*
+**其中`Thread.interrupted()`方法会清除当前线程的中断状态**
 
 👉 [点击查看 ThreadInterruptedStatusDemo 示例代码](../../java/org/concurrency/thread/ThreadInterruptedStatusDemo.java)
 
@@ -267,7 +267,7 @@ public class org.concurrency.thread.SynchronizedDemo
 
 ### wait()、notify() 和 notifyAll()
 
-#### 等待/通知机制：
+#### 等待/通知机制
 
 > 一个线程调用了对象O的wait()方法进入等待状态（该线程被挂起）；而另一个线程调用了对象O的notify()或者notifyAll()方法来唤醒挂起的线程，
 挂起的线程收到通知后从对象O的wait()方法返回，进而执行后续操作。
@@ -275,7 +275,7 @@ public class org.concurrency.thread.SynchronizedDemo
 ⚠️ 线程使用wait()方法进入等待状态后，线程会释放锁，这是因为如果不释放锁，其他线程就无法进入对象的同步方法或同步块中，
 那么就无法执行notify()或notifyAll()来唤醒等待状态中的线程，造成死锁。
 
-#### wait()/notify()/notifyAll()方法的说明
+#### wait()、notify() 和 notifyAll()方法的说明
 
 |方法名称|说明|
 |----|----|
@@ -301,11 +301,11 @@ public class org.concurrency.thread.SynchronizedDemo
 
 1. 调用wait()/notify()/notifyAll()时需要先对调用对象加锁（也就是说只能在同步方法或同步块中使用，否则会抛出`IllegalMonitorStateException`异常）
 
-2. 调用wait()方法后，线程状态由RUNNING进入WAITING（线程挂起），并将当前线程放置到对象的*等待队列*
+2. 调用wait()方法后，线程状态由RUNNING进入WAITING（线程挂起），并将当前线程放置到对象的**等待队列**
 
 3. 调用notify()/notifyAll()方法后，等待线程依旧不会从wait()返回，需要等到调用notify()/notifyAll()的线程释放锁之后，等待的线程才有机会从wait()返回
 
-4. notify()将等待队列中的一个等待线程从*等待队列*中移到*同步队列*中，而notifyAll()则是将等待队列中所有线程全部移到同步队列
+4. notify()将等待队列中的一个等待线程从**等待队列**中移到**同步队列**中，而notifyAll()则是将等待队列中所有线程全部移到同步队列
 
 5. 线程从wait()方法返回的前提是该线程获得了锁
 
@@ -355,13 +355,13 @@ synchronized(对象) {
 
 对应到等待/通知机制的流程中：
 
-1. 患者到就诊门口分诊，类似于*线程在同步队列中，先要去获取锁*
-2. 当患者被叫到时，类似于*线程已经获取到锁*
-3. 大夫让患者先去做检查（缺乏检查报告无法诊断病因），类似于*线程要求的条件不满足*
-4. 患者先去做检查，大夫叫下一个患者，类似于*线程释放锁，进入等待状态（等待队列）*
-5. 患者做完检查，类似于*线程要求的条件已满足*
-6. 患者拿检测报告重新到就诊门口分诊，类似于*线程重新回到同步队列，先要获取锁*
-7. 当大夫再次叫到自己的号，患者再去找大夫就诊，类似于*线程重新获取到锁，且此时条件已满足，可以进入下一步逻辑处理*
+1. 患者到就诊门口分诊，类似于**线程在同步队列中，先要去获取锁**
+2. 当患者被叫到时，类似于**线程已经获取到锁**
+3. 大夫让患者先去做检查（缺乏检查报告无法诊断病因），类似于**线程要求的条件不满足**
+4. 患者先去做检查，大夫叫下一个患者，类似于**线程释放锁，进入等待状态（等待队列）**
+5. 患者做完检查，类似于**线程要求的条件已满足**
+6. 患者拿检测报告重新到就诊门口分诊，类似于**线程重新回到同步队列，先要获取锁**
+7. 当大夫再次叫到自己的号，患者再去找大夫就诊，类似于**线程重新获取到锁，且此时条件已满足，可以进入下一步逻辑处理**
 
 
 
