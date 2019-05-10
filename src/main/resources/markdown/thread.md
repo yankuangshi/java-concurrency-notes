@@ -414,6 +414,8 @@ public final synchronized void join(long millis) throws InterruptedException {
 
 当线程终止时，会调用自身的notifyAll()方法通知所有等待在该对象上的线程。
 
+👉 [点击查看 JoinDemo 示例代码](../../java/org/concurrency/thread/JoinDemo.java)
+
 
 ### 参考
 
