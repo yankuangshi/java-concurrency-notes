@@ -417,7 +417,7 @@ public final synchronized void join(long millis) throws InterruptedException {
 👉 [点击查看 JoinDemo 示例代码](../../java/org/concurrency/thread/JoinDemo.java)
 
 
-### 参考
+## 参考
 
 * 《Java并发编程的艺术》
 * Java并发编程实战 by 极客时间
