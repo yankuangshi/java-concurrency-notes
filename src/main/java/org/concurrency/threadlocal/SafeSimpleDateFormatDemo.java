@@ -172,8 +172,8 @@ public class SafeSimpleDateFormatDemo {
     public static void main(String[] args) throws InterruptedException {
 //        testWithSynchronized();
 //        testWithLocalSimpleDateFormat();
-//        testWithThreadLocal();
-        testWithThreadLocalAndDateUtils();
+        testWithThreadLocal();
+//        testWithThreadLocalAndDateUtils();
     }
 
 }

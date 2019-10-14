@@ -3,6 +3,7 @@ package org.concurrency.thread;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 线程实现测试
@@ -54,6 +55,7 @@ public class ThreadImplDemo {
 
         //should print
         //Hello Thread: Thread-C
+        //after about 5s print
         //Result: 123
     }
 
@@ -87,6 +89,7 @@ public class ThreadImplDemo {
         @Override
         public Object call() throws Exception {
             System.out.println("Hello Thread: " + Thread.currentThread().getName());
+            TimeUnit.SECONDS.sleep(5); //sleep 5s
             return result;
         }
     }

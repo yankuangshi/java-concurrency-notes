@@ -1,8 +1,12 @@
 # Java线程基础
 
-## 线程的生命周期
+## 操作系统线程状态
 
-### [线程的状态][1]
+![通用线程状态变迁图](../img/os-thread.png)
+
+## Java线程的生命周期
+
+### [Java线程的状态][1]
 
 ```java
 public class Thread implements Runnable {
@@ -28,6 +32,24 @@ public class Thread implements Runnable {
 | TERMINATED | 终止状态，表示当前线程执行完毕，可能是任务完成之后自己结束，也可能是产生异常而结束 |
 
 **只要 Java 线程处于 BLOCKED、WAITING、TIMED_WAITING 这三种状态之一，那么这个线程就永远没有CPU的使用权**
+
+### Java线程的RUNNABLE状态和通用系统线程中的Ready和RUNNING状态的区别？
+
+javadoc中说：
+
+> A thread in the runnable state is executing in the Java virtual machine *but it may be waiting for other resources* from the operating system such as processor.
+
+显然runnable状态包含了ready状态。
+
+现在的操作系统架构通常都是以"时间分片"方式进行抢占式轮转调度，时间分片通常非常小，一个线程一次最多只能在CPU上运行比如10-20ms的时间（此时处于running状态），
+时间片用后就要被切换下来放入调度队列的末尾等待再次调度（也即回到ready状态）。这种切换过程称为线程的*上下文切换*，当然CPU不是简单地把线程踢开就完了，
+还需要把被相应的执行状态保持到内存中以便后续的恢复执行。
+
+通常，Java的线程状态是服务于监控的，如果线程切换得是如此之快，那么区分 ready 与 running 就没什么太大意义了。
+
+> 当你看到监控上显示是 running 时，对应的线程可能早就被切换下去了，甚至又再次地切换了上来，也许你只能看到 ready 与 running 两个状态在快速地闪烁。
+
+现今主流的 JVM 实现都把 Java 线程一一映射到操作系统底层的线程上，把调度委托给了操作系统，我们在虚拟机层面看到的状态实质是对底层状态的映射及包装。JVM 本身没有做什么实质的调度，把底层的 ready 及 running 状态映射上来也没多大意义，因此，统一成为runnable 状态是不错的选择。
 
 ### 线程状态的变迁
 
@@ -87,8 +109,23 @@ public class Thread implements Runnable {
 **注意：如果我们想人为终止线程，Thread类里面提供了一个`stop()`方法，但是已被标注为`@Deprecated`，正确的方法应该是调用`interrupt()`方法**
 
 ![Java线程状态变迁图](../img/thread-state.png)
+（图取自《Java并发编程的艺术》）
+
+![Java线程状态变迁图](../img/thread-state2.png)
+（图取自《图解Java多线程设计模式》）
 
 👉 [点击查看 TreadStateDemo 示例代码](../../java/org/concurrency/thread/ThreadStateDemo.java)
+
+其中`BlockedInIOThread`和`BlockedInSocketThread`两个类分别模拟正在阻塞式I/O操作时的线程和正在网络阻塞操作时的线程，我们发现其实线程的状态
+是`RUNNABLE`，并不是`BLOCKED`状态。那是因为当进行阻塞式IO操作时，底层操作系统线程确实处于阻塞状态，但我们关心的是JVM的线程状态。前面说过
+
+>  A thread in the runnable state is executing in the Java virtual machine *but it may be waiting for other resources* from the operating system such as processor.
+
+JVM把CPU、硬盘、网卡都视为资源，有东西在为线程服务，JVM就认为线程在“执行”。处于IO阻塞，只能说CPU不执行线程了，但是网卡可能还在监听，虽然可能暂时没有收到数据，所以JVM认为线程还在执行。
+
+![JVM-OS线程映射](../img/jvm-os.png)
+
+所以Java线程的RUNNABLE状态对应了OS层面线程的ready、running和部分waiting状态。
 
 ## 线程的使用
 
@@ -185,8 +222,7 @@ Runnable和Thread的选择
 
 ### 线程的中断和终止
 
-通过调用线程的`interrupt()`中断线程，如果该线程处于 WAITING 或 TIMED_WAITING 状态时（如调用了`Object.wait()`、`Object.wait(long)`、
-`Object.join()`、`Object.join(long)`、`sleep(long)`等），那么会抛出`InterruptedException`，并且**中断状态会被清除**
+通过调用线程的`interrupt()`中断线程，如果该线程处于 WAITING 或 TIMED_WAITING 状态时（如调用了`Object.wait()`、`Object.wait(long)`、`Object.join()`、`Object.join(long)`、`sleep(long)`等），那么会抛出`InterruptedException`，并且**中断状态会被清除**
 
 👉 [点击查看interrupt()方法文档][6]
 
@@ -305,7 +341,7 @@ public class org.concurrency.thread.SynchronizedDemo
 
 3. 调用notify()/notifyAll()方法后，等待线程依旧不会从wait()返回，需要等到调用notify()/notifyAll()的线程释放锁之后，等待的线程才有机会从wait()返回
 
-4. notify()将等待队列中的一个等待线程从**等待队列**中移到**同步队列**中，而notifyAll()则是将等待队列中所有线程全部移到同步队列
+4. notify()将等待队列中的**一个等待线程**从**等待队列**中移到**同步队列**中，而notifyAll()则是将等待队列中**所有线程**全部移到同步队列
 
 5. 线程从wait()方法返回的前提是该线程获得了锁
 
@@ -327,9 +363,8 @@ synchronized(对象) {
 }
 ```
 
-⚠️ 以上范式可以解决「条件增加满足过」的问题，因为当wait()返回时，有可能条件已经发生了变化，增加条件满足，但是现在已经不满足了，
+⚠️ 以上范式可以解决「条件曾经满足过」的问题，因为当wait()返回时，有可能条件已经发生了变化，曾经条件满足，但是现在已经不满足了，
 所以要重新检验条件是否满足。
-
 
 通知方对应的伪代码如下：
 

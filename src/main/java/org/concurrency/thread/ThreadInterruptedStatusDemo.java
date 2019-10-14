@@ -11,9 +11,9 @@ import java.util.concurrent.TimeUnit;
 public class ThreadInterruptedStatusDemo {
 
     public static void main(String[] args) throws InterruptedException {
-        testInterruptedStatusCleared();
+//        testInterruptedStatusCleared();
 //        testInterruptedStatusCleared2();
-//        testInterruptedStatusWithoutCleared();
+        testInterruptedStatusWithoutCleared();
     }
 
     /**
@@ -82,6 +82,7 @@ public class ThreadInterruptedStatusDemo {
         public void run() {
             while (!Thread.interrupted()) {
                 //The interrupted status of the thread is cleared by this method
+                System.out.println("Thread: " + Thread.currentThread().getName() + " run");
             }
             System.out.println("Thread: " + Thread.currentThread().getName()
                     + " interrupted status: " + Thread.currentThread().isInterrupted());
@@ -92,6 +93,7 @@ public class ThreadInterruptedStatusDemo {
         @Override
         public void run() {
             while (!Thread.currentThread().isInterrupted()) {
+                System.out.println("Thread: " + Thread.currentThread().getName() + " run");
             }
             System.out.println("Thread: " + Thread.currentThread().getName()
                     + " interrupted status: " + Thread.currentThread().isInterrupted());
