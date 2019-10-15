@@ -1,5 +1,7 @@
 package org.concurrency.thread;
 
+import org.concurrency.util.SleepUtils;
+
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -10,22 +12,24 @@ import java.util.concurrent.TimeUnit;
  */
 public class ThreadInterruptedStatusDemo {
 
-    public static void main(String[] args) throws InterruptedException {
-//        testInterruptedStatusCleared();
-//        testInterruptedStatusCleared2();
-        testInterruptedStatusWithoutCleared();
+    public static void main(String[] args) {
+        testInterruptedStatusCleared();
+        testInterruptedStatusCleared2();
+        testInterruptedStatusClearedAndThenReset();
+        testInterruptedStatusUncleared();
+        testInterruptedStatusUncleared2();
     }
 
     /**
-     * 抛出InterruptedException，Java虚拟机会先将该线程的中断标识清除
+     * 测试抛出InterruptedException，Java虚拟机会先将该线程的中断标识清除
      *
      * @throws InterruptedException
      */
-    public static void testInterruptedStatusCleared() throws InterruptedException {
+    public static void testInterruptedStatusCleared() {
         Thread sleepThread = new Thread(new SleepRunnable(), "SleepThread");
         sleepThread.start();
         //休眠5s，让线程充分运行
-        TimeUnit.SECONDS.sleep(5);
+        SleepUtils.second(5);
         sleepThread.interrupt();
 
         //should print
@@ -34,14 +38,29 @@ public class ThreadInterruptedStatusDemo {
     }
 
     /**
+     * 测试抛出InterruptedException，Java虚拟机清除中断标识位后，重新设置中断标识位
+     * @throws InterruptedException
+     */
+    public static void testInterruptedStatusClearedAndThenReset() {
+        Thread sleepThread = new Thread(new SleepRunnable2(), "SleepThread2");
+        sleepThread.start();
+        //休眠5s，让线程充分运行
+        SleepUtils.second(5);
+        sleepThread.interrupt();
+
+        //should print
+        //Thread: SleepThread2 interrupted status: true
+    }
+
+    /**
      * 调用静态方法Thread.interrupted()会清除当前线程的中断标识
      *
      * @throws InterruptedException
      */
-    public static void testInterruptedStatusCleared2() throws InterruptedException {
+    public static void testInterruptedStatusCleared2() {
         Thread busyThread = new Thread(new BusyRunnable(),"BusyThread");
         busyThread.start();
-        TimeUnit.SECONDS.sleep(5);
+        SleepUtils.second(5);
         busyThread.interrupt();
 
         //should print
@@ -52,14 +71,30 @@ public class ThreadInterruptedStatusDemo {
      * 中断标识不会被清除
      * @throws InterruptedException
      */
-    public static void testInterruptedStatusWithoutCleared() throws InterruptedException {
+    public static void testInterruptedStatusUncleared() {
         Thread busyThread = new Thread(new BusyRunnable2(), "BusyThread2");
         busyThread.start();
-        TimeUnit.SECONDS.sleep(5);
+        SleepUtils.second(5);
         busyThread.interrupt();
 
         //should print
         //Thread: BusyThread2 interrupted status: true
+    }
+
+    public static void testInterruptedStatusUncleared2() {
+        Thread busyThread = new Thread(new BusyRunnable3(), "BusyThread3");
+        //为了让busyThread能够随main线程结束而终止，设为Daemon线程
+        busyThread.setDaemon(true);
+        busyThread.start();
+        //休眠5s，让busyThread充分运行
+        SleepUtils.second(5);
+        busyThread.interrupt();
+        System.out.println("Thread: " + busyThread.getName() + " interrupted status: " + busyThread.isInterrupted());
+        //休眠2s，结束main线程，同时终止busyThread线程
+        SleepUtils.second(2);
+
+        //should print
+        //Thread: BusyThread3 interrupted status: true
     }
 
     static class SleepRunnable implements Runnable {
@@ -69,6 +104,7 @@ public class ThreadInterruptedStatusDemo {
             try {
                 TimeUnit.SECONDS.sleep(10);
             } catch (InterruptedException e) {
+                //在抛出InterruptedException之前，Java虚拟机会先将该线程的中断标识位清除
                 System.out.println("throw InterruptedException");
             } finally {
                 System.out.println("Thread: " + Thread.currentThread().getName()
@@ -77,12 +113,30 @@ public class ThreadInterruptedStatusDemo {
         }
     }
 
+    static class SleepRunnable2 implements Runnable {
+
+        @Override
+        public void run() {
+            try {
+                TimeUnit.SECONDS.sleep(10);
+            } catch (InterruptedException e) {
+                //在抛出InterruptedException之前，Java虚拟机会先将该线程的中断标识位清除
+                //线程再次中断自己
+                Thread.currentThread().interrupt();
+            } finally {
+                System.out.println("Thread: " + Thread.currentThread().getName()
+                        +  " interrupted status: " + Thread.currentThread().isInterrupted());
+            }
+        }
+    }
+
     static class BusyRunnable implements Runnable {
+
         @Override
         public void run() {
             while (!Thread.interrupted()) {
-                //The interrupted status of the thread is cleared by this method
-                System.out.println("Thread: " + Thread.currentThread().getName() + " run");
+                //Thread.interrupted静态方法会清除中断标识位
+//                System.out.println("Thread: " + Thread.currentThread().getName() + " run");
             }
             System.out.println("Thread: " + Thread.currentThread().getName()
                     + " interrupted status: " + Thread.currentThread().isInterrupted());
@@ -90,13 +144,23 @@ public class ThreadInterruptedStatusDemo {
     }
 
     static class BusyRunnable2 implements Runnable {
+
         @Override
         public void run() {
             while (!Thread.currentThread().isInterrupted()) {
-                System.out.println("Thread: " + Thread.currentThread().getName() + " run");
+                //Thread实例的isInterrupted()方法不会清除中断标识位
+//                System.out.println("Thread: " + Thread.currentThread().getName() + " run");
             }
             System.out.println("Thread: " + Thread.currentThread().getName()
                     + " interrupted status: " + Thread.currentThread().isInterrupted());
+        }
+    }
+
+    static class BusyRunnable3 implements Runnable {
+
+        @Override
+        public void run() {
+            for (;;) {}
         }
     }
 
